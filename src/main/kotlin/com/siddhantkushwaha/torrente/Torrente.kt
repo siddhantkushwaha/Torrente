@@ -7,11 +7,16 @@ import bt.runtime.Config
 import bt.torrent.TorrentSessionState
 import com.siddhantkushwaha.todd.gdrive.GDrive
 import com.siddhantkushwaha.torrente.custombt.FileSystemStorage
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
+import kotlin.system.exitProcess
 
 class Torrente {
+    private val logger: Logger = LoggerFactory.getLogger(Torrente::class.java)
+
     internal lateinit var gDrive: GDrive
 
     var config: Config = object : Config() {
@@ -33,16 +38,16 @@ class Torrente {
         deleteAfterUploaded: String
     ) {
         if (this::gDrive.isInitialized) {
-            println("Uploading $path at $driveParentFolderId")
+            logger.info("Uploading $path at $driveParentFolderId")
 
             val hash = "$torrentName-$driveParentFolderId"
             if (loadCheckpoint(UPLOADED_TORRENTS_CHECKPOINT).contains(hash))
-                println("Already uploaded, skipping.")
+                logger.info("Already uploaded, skipping.")
 
             gDrive.upload(filePath = path, parentId = driveParentFolderId)
             addToCheckpoint(hash, UPLOADED_TORRENTS_CHECKPOINT)
 
-            println("Uploaded torrent, deleting..")
+            logger.info("Uploaded torrent, deleting..")
             if (deleteAfterUploaded == "yes")
                 File(path).deleteRecursively()
         }
@@ -64,10 +69,10 @@ class Torrente {
             .afterTorrentFetched { torrent ->
 
                 torrentName = torrent.name
-                println("Fetched torrent. $torrentName")
+                logger.info("Fetched torrent. $torrentName")
 
                 if (loadCheckpoint(DOWNLOADED_TORRENTS_CHECKPOINT).contains(torrent.name)) {
-                    println("Torrent already downloaded, skipping.")
+                    logger.info("Torrent already downloaded, skipping.")
                     alreadyDownloaded = true
                 }
             }
@@ -75,7 +80,9 @@ class Torrente {
             .autoLoadModules()
             .module(dhtModule)
             .storage(storage)
+            .stopWhenDownloaded()
             .build()
+
 
         var downloaded = false
         if (!alreadyDownloaded)
@@ -86,14 +93,15 @@ class Torrente {
                     client.stop()
                 }
 
-                println("Pieces complete: ${tss.piecesComplete}/${tss.piecesTotal}, remaining: ${tss.piecesRemaining}")
+                logger.info("Pieces complete: ${tss.piecesComplete}/${tss.piecesTotal}, remaining: ${tss.piecesRemaining}")
                 if (tss.piecesRemaining == 0) {
                     downloaded = true
                     client.stop()
                 }
             }, 2000).join()
 
-        println("State: $downloaded, GDrive: ${this::gDrive.isInitialized}")
+
+        logger.info("State: $downloaded, GDrive: ${this::gDrive.isInitialized}")
         if (downloaded) {
             torrentName?.let {
                 addToCheckpoint(it, DOWNLOADED_TORRENTS_CHECKPOINT)
@@ -105,5 +113,7 @@ class Torrente {
                 )
             }
         }
+
+        exitProcess(0)
     }
 }
