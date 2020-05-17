@@ -1,0 +1,15 @@
+.gradle
+.idea
+/build/
+META-INF
+
+gradle-app.setting
+.gradletasknamecache
+
+checkpoints
+torrents
+downloads
+
+!gradle-wrapper.jar
+credentials.json
+tokens
