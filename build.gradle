@@ -29,7 +29,7 @@ dependencies {
     implementation "com.github.atomashpolskiy:bt-http-tracker-client:1.9"
     implementation "com.github.atomashpolskiy:bt-dht:1.9"
 
-    implementation 'com.github.siddhantkushwaha:todd:08fdd0994a'
+    implementation 'com.github.siddhantkushwaha:todd:v1.0'
 }
 
 compileKotlin {

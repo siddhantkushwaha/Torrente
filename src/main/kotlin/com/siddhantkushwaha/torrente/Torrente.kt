@@ -44,7 +44,7 @@ class Torrente {
             if (loadCheckpoint(UPLOADED_TORRENTS_CHECKPOINT).contains(hash))
                 logger.info("Already uploaded, skipping.")
 
-            gDrive.upload(filePath = path, parentId = driveParentFolderId)
+            gDrive.upload(path = Paths.get(path), driveFolderParentId = driveParentFolderId)
             addToCheckpoint(hash, UPLOADED_TORRENTS_CHECKPOINT)
 
             logger.info("Uploaded torrent, deleting..")
