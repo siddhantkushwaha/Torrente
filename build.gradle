@@ -9,8 +9,7 @@ version '1.0'
 task fatJar(type: Jar) {
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest {
-        attributes 'Implementation-Title': 'Jar Build',
-                'Main-Class': 'com.siddhantkushwaha.torrente.MainKt'
+        attributes 'Main-Class': 'com.siddhantkushwaha.torrente.MainKt'
     }
     with jar
 }
